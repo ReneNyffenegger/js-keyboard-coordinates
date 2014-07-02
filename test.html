@@ -1,0 +1,149 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Keyboard experiment</title>
+
+   <link rel="stylesheet" type="text/css" href="fonts.css" />
+
+   <!--{--><style type='text/css'>
+
+      body {
+        margin: 0;
+      }
+
+   </style><!--}-->
+
+<!--  <script type="text/javascript" src="file://c:/lib/js-vector-matrix/vector-matrix.js"></script> -->
+  <script type="text/javascript" src="https://raw.githubusercontent.com/ReneNyffenegger/js-vector-matrix/master/vector-matrix.js"></script>
+
+  <script type="text/javascript" src='keyboard-coordinates.js'  ></script>
+
+  <!--{--><script type="text/javascript">
+
+    var keys = {};
+    var initTime;
+
+    function draw_vector_vertices_on_context(vertices, ctx) {
+
+      ctx.beginPath();
+      ctx.strokeStyle='#223311';
+
+
+      ctx.moveTo(vertices[0].x, vertices[0].y);
+
+      for (var i=1; i<vertices.length; i++) {
+        ctx.lineTo(vertices[i].x, vertices[i].y);
+      }
+
+
+      ctx.closePath();
+      ctx.stroke();
+
+
+
+    }
+
+    function apply_matrix_on_keyboard(matrix, ctx) {
+      
+      for (var k in this.keys) { 
+
+        draw_vector_vertices_on_context( [
+             keys[k].tl.mult(matrix),
+             keys[k].tr.mult(matrix),
+             keys[k].br.mult(matrix),
+             keys[k].bl.mult(matrix),
+         ], ctx);
+      } 
+
+    }
+
+    function draw_keyboard() {
+   
+      var canvas = document.getElementById('canvas');
+      var ctx    = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      var time     = new Date().getTime();
+      var timeDiff = time - initTime;
+
+      var secondsSinceStart = timeDiff / 1000;
+
+
+      var rotation2 = tq84.rotation_x(0.2    * secondsSinceStart);
+      var rotation3 = tq84.rotation_y(0.03   * secondsSinceStart);
+
+      var translation  = tq84.translation(80, 190, 50);
+    
+      var scale     = tq84.scale     (2 + Math.sin(secondsSinceStart / 100));
+    
+      var matrix;
+      
+      matrix = translation;
+      matrix = matrix.mult(rotation2);
+      matrix = matrix.mult(rotation3);
+      matrix = matrix.mult(scale);
+    
+      apply_matrix_on_keyboard(matrix, ctx);
+
+      requestAnimFrame(function() {
+        draw_keyboard();
+      });
+
+    }
+
+    function init() {
+
+      window.requestAnimFrame = (
+        function(callback) {
+          return  window.requestAnimationFrame       || 
+                  window.webkitRequestAnimationFrame || 
+                  window.mozRequestAnimationFrame    || 
+                  window.oRequestAnimationFrame      || 
+                  window.msRequestAnimationFrame     || 
+                  function(callback) { 
+                    window.setTimeout(callback, 1000 / 60); };
+                  }
+        )();
+
+       initTime = (new Date()).getTime();
+
+       function callback_key (name, x, y, w, h) {
+
+         keys[name] = {};
+         keys[name].tl = new tq84.vector(x   , y   , 0);
+         keys[name].tr = new tq84.vector(x+w , y   , 0);
+         keys[name].bl = new tq84.vector(x   , y-h , 0);
+         keys[name].br = new tq84.vector(x+w , y-h , 0);
+
+       }
+
+    //                          Left       | Right
+       function callback_enter( tl_x, tl_y , tr_x, tr_y,  // Top
+                                ml_x, ml_y , mr_x, mr_y,  // Middle
+                                bl_x, bl_y , br_x, br_y)  // Bottom
+       {
+
+         this.enter = {};
+
+         this.enter.tl = new tq84.vector(tl_x, tl_y, 0); this.enter.tr = new tq84.vector(tr_x, tr_y, 0);
+         this.enter.ml = new tq84.vector(ml_x, ml_y, 0); this.enter.mr = new tq84.vector(mr_x, mr_y, 0);
+         this.enter.bl = new tq84.vector(bl_x, bl_y, 0); this.enter.br = new tq84.vector(br_x, br_y, 0);
+
+       }
+
+    
+       tq84.keyboard_coordinates.fill(callback_key, callback_enter);
+
+       draw_keyboard();
+    }
+
+  </script><!--}-->
+
+</head>
+<body onload='init();'>
+
+  <canvas id='canvas' width=1000 height=700></canvas>
+
+</body>
+</html>
+
